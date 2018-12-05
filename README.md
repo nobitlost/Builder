@@ -575,17 +575,25 @@ Lines starting with `@` followed by space or a line break are treated as comment
   then
 
   ```js
-  const builder = require('Builder');
+  const fs = require('fs');
+  const Builder = require('Builder');
+
+  const builder = new Builder();
 
   // Provide GitHub credentials (optional)
   builder.machine.readers.github.username = "<username>";
   builder.machine.readers.github.token = "<personal_access_token>";
-  
+
   // Set up cache params (optional)
-  builder.machine.useCache = <boolean>;
-  builder.machine.excludeList = "<path to exclude file>" // or "" for default name
-  builder.machine.clearCache() // delete cache folder
-  const output = builder.machine.execute(`@include "${inputFile}"`);
+  builder.machine.useCache = false;
+  builder.machine.excludeList = "";
+
+  // Create include and source files
+  fs.writeFileSync('include.file', "I_AM_INCLUDE_FILE");
+  fs.writeFileSync('source.file', '@include "include.file"\nI_AM_SOURCE_FILE');
+
+  // Run builder
+  console.log(builder.machine.execute(fs.readFileSync('source.file').toString()));
   ```
 
 - Or as a CLI:
