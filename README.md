@@ -2,9 +2,7 @@
 
 
 
-
-
-- [Syntax](#syntax)
+ [Syntax](#syntax)
   - [Directives](#directives)
     - [@set](#set)
     - [@macro](#macro)
