@@ -142,7 +142,8 @@ class GithubReader extends AbstractReader {
     return {
       __FILE__: path.basename(parsed.path),
       __PATH__: `github:${parsed.owner}/${parsed.repo}/${path.dirname(parsed.path)}`,
-      __REF__: parsed.ref
+      __REPO_REF__: parsed.ref,
+      __REPO_PREFIX__: `github:${parsed.owner}/${parsed.repo}`
     };
   }
 

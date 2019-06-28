@@ -325,13 +325,16 @@ class Machine {
 
     // Check to see if file is a github absolute remote path, in which case we should return that path back directly
     if(this._getReader(includePath) === this.readers.github){
-      return includePath
+      if(includePath.indexOf(context.__REPO_PREFIX__) > -1)
+        return context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+      else
+        return includePath  // Absolute github include
     }
 
     // check if file is included from github source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
     if (remotePath && this._getReader(remotePath) === this.readers.github) {
-      return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
+      return context.__REPO_REF__ ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
 
     // Both FileReader and GithubReader now search in this order:
