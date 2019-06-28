@@ -36,7 +36,7 @@ class FileReader extends AbstractReader {
   constructor() {
     super();
     this.searchDirs = [
-      path.resolve('.')
+      path.resolve('.'),
     ];
   }
 
@@ -50,9 +50,16 @@ class FileReader extends AbstractReader {
    * @param {string} filePath
    * @return {string}
    */
-  read(filePath) {
+  read(filePath, options) {
+
+    var searchDirs = this.searchDirs.concat(
+      path.resolve(".") + options.context.__PATH__,
+      options.context.__PATH__,
+      '' /* to try as absolute path */
+    )
+
     // iterate through the search dirs
-    for (const dir of this.searchDirs.concat('' /* to try as absolute path */)) {
+    for (const dir of searchDirs) {
       const sourcePath = path.join(dir, filePath);
 
       if (fs.existsSync(sourcePath)) {

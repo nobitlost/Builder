@@ -184,16 +184,12 @@ class GithubReader extends AbstractReader {
         agent: agent,
         timeout: 5000
       },
-    });
-
-    // authorization
-    if (username != '' && password !== '') {
-      octokit.authenticate({
+      auth: {
         type: 'basic',
-        username,
-        password
-      });
-    }
+        "username": username,
+        "password": password
+      }
+    });
 
     if (gitBlobID !== 'undefined') {
       const args = {
