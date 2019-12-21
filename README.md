@@ -62,7 +62,7 @@ There are a number of ways in which you can [install Builder](#builder-installat
 
 You can use Builder to pull the contents of separate code files into your main source code files. These additional files might contain library code that you make use of across a number of different products, or they might contain confidential data which you don’t want to keep inside source code files that are managed through a software version control system.
 
-You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub.
+You tell Builder which files to import, and where within your main source code they should be inserted, by using the [`@include`](#include) command. Builder is able to access additional files that are stored on your computer or held remotely on a local network file share, on an Internet site or hosted by GitHub or [Bitbucket Server](https://www.atlassian.com/software/bitbucket/download).
 
 While Builder can be used to insert code this way, it can be used in far more sophisticated ways thanks to its integrated expression processor and programming logic. For example, if you need to generate multiple versions of your application firmware for versions of your product which make use of different imp modules, you can use Builder’s [conditional execution features](#if-elif-else), [variables](#variables) and [loops](#while) to pull your various code components together at build time and output files that are ready to be transferred to impCentral.
 
@@ -90,8 +90,8 @@ Now use Builder’s `pleasebuild` command to configure the newly installed utili
 ```sh
 pleasebuild [-l] [-D<variable> <value>]
     [--github-user <username> --github-token <token>]
-    [--lib <path_to_file>]
-    [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
+    [--bitbucket-server-addr <address>] [--bitbucket-server-user <username> --bitbucket-server-token <token>]
+    [--lib <path_to_file>] [--use-remote-relative-includes] [--suppress-duplicate-includes-warning]
     [--cache] [--clear-cache] [--cache-exclude-list <path_to_file>]
     [--save-dependencies [<path_to_file>]] [--use-dependencies [<path_to_file>]]
     [--save-directives [<path_to_file>]] [--use-directives [<path_to_file>]]
@@ -106,14 +106,17 @@ where `<input_file>` is the path to source file which should be preprocessed and
 | -D&lt;variable&gt; | | No | Yes | Defines a [variable](#variables). May be specified several times to define multiple variables |
 | --github-user | | No | Yes | A GitHub username. |
 | --github-token | | No | Yes | A GitHub [personal access token](https://github.com/settings/tokens) or password (not recommended). Should be specified if the `--github-user` option is specified. |
+| --bitbucket-server-addr | | No | Yes | A Bitbucket Server address. E.g., `https://bitbucket-srv.itd.example.com` |
+| --bitbucket-server-user | | No | Yes | A Bitbucket Server username. |
+| --bitbucket-server-token | | No | Yes | A Bitbucket Server [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) or password (not recommended). Should be specified if the `--bitbucket-server-user` option is specified. |
 | --lib | --libs | No | Yes | Include the specified [JavaScript file(s) as a library](#including-javascript-libraries). May be specified several times to include multiple libraries. The provided value may specify a concrete file or a directory (all files from the directory will be included). The value may contain [wildcards](https://www.npmjs.com/package/glob) (all matched files will be included) |
 | --use-remote-relative-includes | | No | No | Interpret every [local include](#include) as relative to the location of the source file where it is mentioned. See ['Local Includes From Remote Files'](#local-includes-from-remote-files) |
 | --suppress-duplicate-includes-warning | --suppress-duplicate | No | No | Do not show a warning if a source file with the same content was included multiple times from different locations and this results in code duplication |
 | --cache | -c | No | No | Turn on caching for all files included from remote resources. This option is ignored if the `--save-dependencies` or `--use-dependencies` options are specified. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --clear-cache | | No | No | Clear the cache before Builder starts running. See [‘Caching Remote Includes’](#caching-remote-includes) |
 | --cache-exclude-list | | No | Yes | Set the path to the file that lists resources which should not be cached. See [‘Caching Remote Includes’](#caching-remote-includes) |
-| --save-dependencies | | No | No | Save references to the required GitHub files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
-| --use-dependencies | | No | No | Use the specified file to set which GitHub files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
+| --save-dependencies | | No | No | Save references to the required GitHub/Bitbucket files in the specified file. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
+| --use-dependencies | | No | No | Use the specified file to set which GitHub/Bitbucket files are required. If a file name is not specified, the `dependencies.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts).  |
 | --save-directives | | No | No | Save Builder variable definitions in the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 | --use-directives | | No | No | Use Builder variable definitions from the specified file. If a file name is not specified, the `directives.json` file in the local directory is used. See [‘Reproducible Artifacts’](#reproducible-artifacts) |
 
@@ -141,11 +144,16 @@ builder.machine.useCache = <true|false>;
 builder.machine.readers.github.username = "<USERNAME>";
 builder.machine.readers.github.token = "<PASSWORD_OR_ACCESS_TOKEN>";
 
+// Set Bitbucket Server address and credentials. See the "--bitbucket-server-*" CLI options.
+builder.machine.readers.bitbucketSrv.serverAddr = "<ADDRESS>";
+builder.machine.readers.bitbucketSrv.username = "<USERNAME>";
+builder.machine.readers.bitbucketSrv.token = "<PASSWORD_OR_ACCESS_TOKEN>";
+
 // Path to the file that lists the resources which should be excluded from caching.
 // See the "--cache-exclude-list" CLI option.
 builder.machine.excludeList = "<PATH_TO_FILE>";
 
-// Replace local include paths to github URLs if requested.
+// Replace local include paths to github/bitbucket URLs if requested.
 // See the "--use-remote-relative-includes" CLI option.
 builder.machine.remoteRelativeIncludes = <true|false>;
 
@@ -527,6 +535,39 @@ This directive can be used to include local files, external sources or [macros](
     - Tag _v3.0.1_:
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
+        
+- For Bitbucket Server file, where:
+
+    - `project/user` is the project/user name. **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`. This doesn't apply to project names.
+    - `repo` is the repository name.
+    - `ref` is the git reference (branch name or tag, defaults to _master_).
+
+    <pre><b>@include</b> "bitbucket-server:<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
+
+
+    - `project` is the project name.
+    - `~user` is the user name. **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`.
+    - `repo` is the repository name.
+    - `ref` is the git reference (branch name or tag, defaults to _master_).
+<pre>// Include a source file from a project
+<b>@include</b> "bitbucket-server:<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
+// Include a source file from a personal repo
+<b>@include</b> "bitbucket-server:<i>&lt;~user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
+
+
+
+
+    - Head of the default branch
+
+        <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut"</pre>
+
+    - Head of the _develop_ branch
+
+        <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut@develop"</pre>
+
+    - Tag _v3.0.1_:
+
+        <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut@v3.0.1"</pre>
 
 The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
