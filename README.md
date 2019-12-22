@@ -532,30 +532,21 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@develop"</pre>
 
-    - Tag _v3.0.1_:
+    - Tag _v3.0.1_
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
         
 - For Bitbucket Server file, where:
 
-    - `project/user` is the project/user name. **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`. This doesn't apply to project names.
+    - `project` is the project name (needed to include source files from project repos).
+    - `user` is the user name (needed to include source files from personal repos). **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`.
     - `repo` is the repository name.
     - `ref` is the git reference (branch name or tag, defaults to _master_).
 
-    <pre><b>@include</b> "bitbucket-server:<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
-
-
-    - `project` is the project name.
-    - `~user` is the user name. **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`.
-    - `repo` is the repository name.
-    - `ref` is the git reference (branch name or tag, defaults to _master_).
-<pre>// Include a source file from a project
-<b>@include</b> "bitbucket-server:<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
-// Include a source file from a personal repo
-<b>@include</b> "bitbucket-server:<i>&lt;~user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
-
-
-
+    <pre>// Include a source file from a project repo
+  <b>@include</b> "bitbucket-server:<i>&lt;project&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"
+  // Include a source file from a personal repo
+  <b>@include</b> "bitbucket-server:<i>~&lt;user&gt;</i>/<i>&lt;repo&gt;</i>/<i>&lt;path&gt;</i>[@<i>&lt;ref&gt;</i>]"</pre>
 
     - Head of the default branch
 
@@ -565,9 +556,9 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut@develop"</pre>
 
-    - Tag _v3.0.1_:
+    - Tag _v3.0.1_ (personal repo)
 
-        <pre><b>@include</b> "bitbucket-server:Tools/Promise/promise.class.nut@v3.0.1"</pre>
+        <pre><b>@include</b> "bitbucket-server:~john/Promise/promise.class.nut@v3.0.1"</pre>
 
 The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
@@ -578,14 +569,26 @@ The `@include` directive can be combined with the `__PATH__` [variable](#builder
 @include __PATH__ + "/../shared/Constants.shared.nut"
 ```
 
-#### GitHub Authentication ####
+#### Authentication ####
+
+##### GitHub #####
 
 When using GitHub `@include` statements, authentication is optional. However, you should bear in mind that:
 
 - If you use authentication, the GitHub API provides much higher rate limits.
 - Authentication is required to access private repositories.
 
-Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended). If you are using Builder as a [library](#library-installation), GitHub credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your GitHub credentials will need to be passed into the `pleasebuild` command.
+Apart from a GitHub username, you need to provide either a [personal access token](https://github.com/settings/tokens) **or** a password (which is less secure and not recommended).
+
+##### Bitbucket Server #####
+
+When using Bitbucket Server `@include` statements, authentication is optional but is required to access private repositories.
+
+Apart from a Bitbucket Server username, you need to provide either a [personal access token](https://confluence.atlassian.com/bitbucketserver/personal-access-tokens-939515499.html) **or** a password (which is less secure and not recommended).
+
+##### Credentials passing / storing #####
+
+If you are using Builder as a [library](#library-installation), GitHub / Bitbucket Server credentials can be stored using your system's environment variables or in files that store Builder variables. When you are using Builder's [command line tool](#command-line-tool-installation), your credentials will need to be passed into the `pleasebuild` command.
 
 ### @include once ###
 
