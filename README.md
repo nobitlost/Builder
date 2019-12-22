@@ -31,7 +31,7 @@
             - [Define A Macro](#define-a-macro)
             - [Use A Macro](#use-a-macro)
         - [@include](#include)
-            - [GitHub Authentication](#github-authentication)
+            - [Authentication](#authentication)
         - [@include once](#include-once)
         - [@while](#while)
         - [@repeat](#repeat)
@@ -786,7 +786,7 @@ This section contains information that will help you work with Builder more effe
 
 ## Reproducible Artifacts ##
 
-It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of GitHub files and libraries are stored in a [‘dependencies.json’](#github-files-dependencies) file.
+It is possible to save the build configuration data used for preprocessing a source file in order to create an identical source file again later with that saved configuration. Builder variable definitions are saved in a [‘directives.json’](#builder-variables-directives) file, and references to the concrete versions of GitHub / Bitbucket Server files and libraries are stored in a [‘dependencies.json’](#github-files-dependencies) file.
 
 ### Builder Variables: Directives ###
 
