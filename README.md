@@ -560,6 +560,8 @@ This directive can be used to include local files, external sources or [macros](
 
         <pre><b>@include</b> "bitbucket-server:~john/Promise/promise.class.nut@v3.0.1"</pre>
 
+    **Note**: Currently, only one server can be specified/used to fetch all Bitbucket Server includes.
+
 The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
 ```
