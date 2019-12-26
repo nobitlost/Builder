@@ -535,8 +535,8 @@ This directive can be used to include local files, external sources or [macros](
     - Tag _v3.0.1_
 
         <pre><b>@include</b> "github:electricimp/Promise/promise.class.nut@v3.0.1"</pre>
-<a id='include-bitbucket'></a>        
-- For Bitbucket Server file, where:
+<a id='include-bitbucket'></a>
+- For [Bitbucket Server](#include-bitbucket-note1) file, where:
 
     - `project` is the project name (needed to include source files from project repos).
     - `user` is the user name (needed to include source files from personal repos). **Note:** user name must be prepended with `~`. E.g., your user name is John - then you should write `~john`.
@@ -559,8 +559,10 @@ This directive can be used to include local files, external sources or [macros](
     - Tag _v3.0.1_ (personal repo)
 
         <pre><b>@include</b> "bitbucket-server:~john/Promise/promise.class.nut@v3.0.1"</pre>
+    <a id='include-bitbucket-note1'></a>
+    **Note 1**: This section describes [**Bitbucket Server**](https://www.atlassian.com/software/bitbucket/download) includes. You can't use this to include files from [Bitbucket.org](https://bitbucket.org/).
 
-    **Note**: Currently, only one server can be specified/used to fetch all Bitbucket Server includes.
+    **Note 2**: Currently, only one server can be specified/used to fetch all Bitbucket Server includes.
 
 The `@include` directive can be combined with the `__PATH__` [variable](#builder-variables) to build references to your files.
 
