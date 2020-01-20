@@ -174,7 +174,7 @@ class Machine {
   _formatPath(filepath, filename) {
     return path.normalize(path.join(filepath, filename));
   }
-  
+
   /**
    * Execute AST
    * @param {[]} ast
@@ -285,19 +285,14 @@ class Machine {
   }
 
   /**
-   * Concatenate github URL prefix and local relative include
+   * Concatenate github/bitbucket URL prefix and local relative include
    * @param {string[]} prefix
    * @param {string[]} includePath
    * @private
    */
   _formatURL(prefix, includePath) {
-
-    const URL = url.parse(prefix);
-    if (!URL.protocol) {
-      return undefined;
-    }
-
-    const res = prefix.match(/(github:)(.*)/);
+    const res = prefix.match(/^(github:)(.*)/) ||
+                prefix.match(/^(bitbucket-server:)(.*)/);
     if (res === null) {
       return undefined;
     }
@@ -307,7 +302,7 @@ class Machine {
   }
 
   /**
-   * Replace local includes to github URLs if requested
+   * Replace local includes to github/bitbucket URLs if requested
    * @param {string} includePath
    * @param {{}} context
    * @private
@@ -333,9 +328,12 @@ class Machine {
       return includePath;
     }
 
-    // check if file is included from github source
+    // check if file is included from github or Bitbucket server
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    if (remotePath && this._getReader(remotePath) === this.readers.github) {
+    const isGithubSource = remotePath && (this._getReader(remotePath) === this.readers.github);
+    const isBitbucketSrvSource = remotePath && (this._getReader(remotePath) === this.readers.bitbucketSrv);
+
+    if (isGithubSource || isBitbucketSrvSource) {
       return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
     }
 
@@ -365,7 +363,7 @@ class Machine {
       return;
     }
 
-    // checkout local includes in the github sources from github
+    // checkout local includes in the github/bitbucket sources from github/bitbucket
     includePath = this._remoteRelativeIncludes(includePath, context);
 
     const reader = this._getReader(includePath);
