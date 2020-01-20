@@ -318,24 +318,41 @@ class Machine {
      * function and implemented for every reader type independently.
      */
 
-    // check if the file is included locally
-    if (this._getReader(includePath) !== this.readers.file) {
-      return includePath;
+    // Check to see if file is a github or Bitbucket server absolute remote path, in which case we should return that path back directly
+    if(this._getReader(includePath) === this.readers.github || this._getReader(includePath) === this.readers.bitbucketSrv){
+      if(includePath.indexOf(context.__REPO_PREFIX__) > -1){
+        var rv = context.__REPO_REF__ ? `${path.join(includePath)}@${context.__REPO_REF__}` : path.join(includePath); // Potentially someone using __PATH__
+        if(process.platform === "win32"){
+          rv = rv.replace(/\\/g, '/');
+        }
+        return rv
+      } else{
+        return includePath  // Absolute github include
+      }
     }
 
-    // check that path is not absolute
-    if (path.isAbsolute(includePath)) {
-      return includePath;
-    }
-
-    // check if file is included from github or Bitbucket server
+    // check if file is included from github or Bitbucket server source - if so, modify the path and return it relative to the repo root
     const remotePath = this._formatURL(context.__PATH__, includePath);
-    const isGithubSource = remotePath && (this._getReader(remotePath) === this.readers.github);
-    const isBitbucketSrvSource = remotePath && (this._getReader(remotePath) === this.readers.bitbucketSrv);
-
-    if (isGithubSource || isBitbucketSrvSource) {
-      return context.__REF__ ? `${remotePath}@${context.__REF__}` : remotePath;
+    if (remotePath && this._getReader(remotePath) === this.readers.github || this._getReader(remotePath) === this.readers.bitbucketSrv) {
+      return context.__REPO_REF__ ? `${remotePath}@${context.__REPO_REF__}` : remotePath;
     }
+
+    // Both FileReader and GithubReader now search in this order:
+    // - Relative to process.cwd() / repo root
+    // - Relative to process.cwd() / repo root + current context.__PATH__
+    // - Absolute path of context.__PATH__ + includePath
+    // - Absolute path of includePath
+
+    // // check that path is not absolute
+    // if (path.isAbsolute(includePath)) {
+    //   return includePath;
+    // }
+
+    // // check if the file is included locally
+    // if (this._getReader(includePath) === this.readers.file) {
+    //   return includePath
+    //   // return context.__PATH__ + "/" + includePath;
+    // }
 
     return includePath;
   }
@@ -357,24 +374,32 @@ class Machine {
       context,
     ).trim();
 
-    // if once flag is set, then check if source has already been included
+    // checkout local includes in the github sources from github
+    includePath = this._remoteRelativeIncludes(includePath, context);
+
+    // if once flag is set, then check if source has already been included (and avoid the read below if avoidable)
     if (once && this._includedSources.has(includePath)) {
-      this.logger.debug(`Skipping source "${includePath}": has already been included`);
+      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
       return;
     }
 
-    // checkout local includes in the github/bitbucket sources from github/bitbucket
-    includePath = this._remoteRelativeIncludes(includePath, context);
-
     const reader = this._getReader(includePath);
-    this.logger.info(`Including source "${includePath}"`);
+    this.logger.info(`Including source "${includePath}" with context.__PATH__ = "${context.__PATH__}"`);
 
     // read
-    const res = this.fileCache.read(reader, includePath, this.dependencies);
+    const res = this.fileCache.read(reader, includePath, this.dependencies, context)
+
+    const md5sum = md5(res.content);
+
+    // if once flag is set, then check if source has already been included
+    if (once && this._includedSourcesHashes.has(md5sum)) {
+      this._includedSources.add(includePath)  // Prevent fetches in the future for the same path
+      this.logger.debug(`Skipping source "${includePath}" - contents have already been included previously`);
+      return;
+    }
 
     // Check if source with same hash value has already been included
     if (!this.suppressDupWarning) {
-      const md5sum = md5(res.content);
       if (this._includedSourcesHashes.has(md5sum)) {
         const path = this._includedSourcesHashes.get(md5sum).path;
         const file = this._includedSourcesHashes.get(md5sum).file;
@@ -383,8 +408,8 @@ class Machine {
         const dupFile = context.__FILE__;
         const dupLine = context.__LINE__;
         const message = `Warning: duplicated includes detected! The same exact file content is included from
-    ${file}:${line} (${path})
-    ${dupFile}:${dupLine} (${dupPath})`;
+--- ${file}:${line} (${path})
+--- ${dupFile}:${dupLine} (${dupPath})`;
 
         console.error("\x1b[33m" + message + '\u001b[39m');
       }

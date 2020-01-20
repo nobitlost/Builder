@@ -24,8 +24,8 @@ describe('Machine', () => {
     const includePathOriginal = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder`;
     const includePathDuplicated = `${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy`;
     const text = `Warning: duplicated includes detected! The same exact file content is included from
-    main:1 (${includePathOriginal})
-    main:2 (${includePathDuplicated})`;
+--- main:1 (${includePathOriginal})
+--- main:2 (${includePathDuplicated})`;
     const duplicateWarning = `\x1b[33m${text}\u001b[39m\n`;
     try {
       // Capture STDERR messages
@@ -44,8 +44,8 @@ describe('Machine', () => {
 
       machine.suppressDupWarning = false;
       const res = eol.lf(machine.execute(
-        `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
-@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+        `@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
       ));
       expect(res).toEqual(`a.builder\na.builder\n`);
     } catch (e) {
@@ -64,8 +64,8 @@ describe('Machine', () => {
       });
 
       const res = eol.lf(machine.execute(
-        `@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
-@include once "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
+        `@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder"
+@include "${backslashToSlash(__dirname)}/../fixtures/lib/a.builder_copy"`
       ));
       expect(res).toEqual(`a.builder\na.builder\n`);
     } catch (e) {

@@ -137,16 +137,17 @@ class BitbucketServerReader extends AbstractReader {
   }
 
   /**
-   * Parses source URI into __FILE__/__PATH__/__REF__
+   * Parses source URI into __FILE__/__PATH__/__REPO_REF__/__REPO_PREFIX__
    * @param {string} source - source URI
-   * @return {{__FILE__, __PATH__, __REF__}}
+   * @return {{__FILE__, __PATH__, __REPO_REF__, __REPO_PREFIX__}}
    */
   parsePath(source) {
     const parsed = BitbucketServerReader.parseUrl(source);
     return {
       __FILE__: path.basename(parsed.path),
       __PATH__: `bitbucket-server:${parsed.project}/${parsed.repo}/${path.dirname(parsed.path)}`,
-      __REF__: parsed.ref
+      __REPO_REF__: parsed.ref,
+      __REPO_PREFIX__: `bitbucket-server:${parsed.project}/${parsed.repo}`
     };
   }
 
@@ -280,7 +281,6 @@ class BitbucketServerReader extends AbstractReader {
    * @param {string} url - request URL
    * @param {string} error - error message
    * @param {string} resp - response of the request
-   * @return {{__FILE__, __PATH__, __REF__}}
    */
   static checkResponse(url, error, resp) {
     try {

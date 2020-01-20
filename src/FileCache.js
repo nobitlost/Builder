@@ -140,9 +140,12 @@ class FileCache {
    * @return {content: string, includePathParsed} content and parsed path
    * @private
    */
-  read(reader, includePath, dependencies) {
+  read(reader, includePath, dependencies, context) {
+    // Do this first as our includePath and reader may change on us if we have a cache hit
+    let includePathParsed = reader.parsePath(includePath);
+
     let needCache = false;
-    if (!dependencies && this._toBeCached(includePath) && this._isCachedReader(reader)) {
+    if ((!dependencies || dependencies.get(includePath) === undefined) && this._toBeCached(includePath) && this._isCachedReader(reader)) {
       let result;
       if ((result = this._findFile(includePath)) && !this._isCacheFileOutdate(result)) {
         // change reader to local reader
@@ -154,8 +157,7 @@ class FileCache {
       }
     }
 
-    const includePathParsed = reader.parsePath(includePath);
-    let content = reader.read(includePath, { dependencies: dependencies });
+    let content = reader.read(includePath, { dependencies: dependencies, context: context });
 
     // if content doesn't have line separator at the end, then add it
     if (content.length > 0 && content[content.length - 1] != '\n') {
